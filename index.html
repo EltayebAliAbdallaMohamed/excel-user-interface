@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Science Lesson - Text to Speech</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 4px;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            background: #fff;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .content {
+            flex: 1;
+            padding: 40px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dialogue-display {
+            text-align: center;
+            width: 100%;
+        }
+
+        .line-counter {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .speaker-display {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            min-height: 30px;
+        }
+
+        .speaker-teacher {
+            color: #d946a6;
+        }
+
+        .speaker-yuna {
+            color: #ec4899;
+        }
+
+        .speaker-felix {
+            color: #f59e0b;
+        }
+
+        .speaker-marcus {
+            color: #10b981;
+        }
+
+        .speaker-sophy {
+            color: #3b82f6;
+        }
+
+        .dialogue-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 30px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls-section {
+            background: #f3f4f6;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .control-label {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .control-group input[type="range"],
+        .control-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .control-group input[type="range"] {
+            width: 120px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .speak-btn {
+            background-color: #667eea;
+            color: white;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .speak-btn:hover:not(:disabled) {
+            background-color: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .speak-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .stop-btn {
+            background-color: #ef4444;
+            color: white;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .stop-btn:hover:not(:disabled) {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .stop-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background-color: #10b981;
+            color: white;
+            min-width: 100px;
+            justify-content: center;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            border-radius: 5px;
+            color: #1e40af;
+            font-size: 14px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .icon {
+            font-size: 18px;
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            text-align: center;
+            color: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .footer-instructions {
+            opacity: 0.9;
+            font-size: 13px;
+        }
+
+        .footer-credit {
+            opacity: 0.85;
+            font-size: 13px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .footer-copyright {
+            opacity: 0.75;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .dialogue-text {
+                font-size: 18px;
+                min-height: 80px;
+            }
+
+            .speaker-display {
+                font-size: 16px;
+            }
+
+            .button-container,
+            .nav-buttons {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group input[type="range"],
+            .control-group select {
+                width: 100%;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .footer {
+                padding: 15px 20px;
+            }
+
+            .footer-content {
+                font-size: 12px;
+            }
+
+            .footer-instructions {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Computer Science Lesson</h1>
+            <p>Unit Two: Understanding the MS Excel User Interface</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="line-counter">
+                Line <span id="currentLine">1</span> of <span id="totalLines">18</span>
+            </div>
+
+            <div class="dialogue-display">
+                <div class="speaker-display" id="speakerDisplay"></div>
+                <div class="dialogue-text" id="dialogueText"></div>
+            </div>
+
+            <div class="controls-section">
+                <div class="control-label">⚙️ Speech Settings</div>
+                <div class="control-group">
+                    <label>
+                        Speed:
+                        <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
+                        <span id="speedValue">1x</span>
+                    </label>
+                    <label>
+                        Pitch:
+                        <input type="range" id="pitchControl" min="0.5" max="2" step="0.1" value="1">
+                        <span id="pitchValue">1x</span>
+                    </label>
+                    <label>
+                        Language:
+                        <select id="languageControl">
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button class="speak-btn" id="speakBtn">
+                    <span class="icon">🔊</span> Speak
+                </button>
+                <button class="stop-btn" id="stopBtn" disabled>
+                    <span class="icon">⏹️</span> Stop
+                </button>
+            </div>
+
+            <div class="status" id="status"></div>
+        </div>
+
+        <div style="padding: 0 30px 20px;">
+            <div class="nav-buttons">
+                <button class="nav-btn" id="prevBtn">
+                    <span class="icon">◀</span> Previous
+                </button>
+                <button class="nav-btn" id="nextBtn">
+                    <span class="icon">▶</span> Next
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-content">
+                <div class="footer-instructions">
+                    📌 Use arrow keys to navigate or click Previous/Next buttons. Press Spacebar to speak.
+                </div>
+                <div class="footer-credit">
+                    ✨ Created by: <strong>Eltayeb Mohamed</strong>
+                </div>
+                <div class="footer-copyright">
+                    © 2026 Computer Science Learning Platform. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dialogue = [
+            {
+                speaker: "Teacher",
+                text: "Welcome to Unit Two! Today we will learn about MS Excel. Excel is a spreadsheet application that helps us organize and analyze data. The question for Unit Two is 'What parts of the Excel user interface are you curious about?' Let's start with Yuna. What part of Excel interests you?",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Yuna",
+                text: "I want to learn about the ribbon. I see it at the top of Excel with lots of buttons and icons.",
+                class: "speaker-yuna"
+            },
+            {
+                speaker: "Teacher",
+                text: "Great observation! The ribbon is the toolbar at the top of Excel that contains commands and tools. It has tabs like Home, Insert, and Format. How about you, Felix? What interests you about Excel?",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Felix",
+                text: "I'm interested in cells. I see rows and columns, and where they cross, there are small boxes called cells. What are they used for?",
+                class: "speaker-felix"
+            },
+            {
+                speaker: "Teacher",
+                text: "Excellent question! Cells are the basic units in Excel. Each cell can hold data like numbers, text, or formulas. Cells are identified by their column letter and row number, like A1 or B5. Marcus, what about you?",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Marcus",
+                text: "I want to know about the formula bar. I see it below the ribbon. What is it used for?",
+                class: "speaker-marcus"
+            },
+            {
+                speaker: "Teacher",
+                text: "Perfect! The formula bar displays the content of the active cell. You can also use it to enter or edit formulas and data. It shows what you are working on in the selected cell.",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Sophy",
+                text: "What about the name box? I see a small box to the left of the formula bar that shows cell addresses.",
+                class: "speaker-sophy"
+            },
+            {
+                speaker: "Teacher",
+                text: "Great question! The name box shows the address of the currently selected cell. You can also use it to navigate to a specific cell by typing the cell address. It helps you keep track of where you are in the spreadsheet.",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Yuna",
+                text: "Can you explain the column and row headers? I see letters at the top and numbers on the left side.",
+                class: "speaker-yuna"
+            },
+            {
+                speaker: "Teacher",
+                text: "Yes! The column headers are the letters at the top, like A, B, C, D. The row headers are the numbers on the left, like 1, 2, 3, 4. Together, they create the address system for cells. For example, the cell in column C and row 2 is called C2.",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Felix",
+                text: "I see a sheet tab at the bottom of Excel. What is that?",
+                class: "speaker-felix"
+            },
+            {
+                speaker: "Teacher",
+                text: "Good observation! Sheet tabs are at the bottom of the window. They allow you to have multiple sheets in one Excel file. You can click on different sheet tabs to switch between different sheets. Each sheet is like a separate page for organizing data.",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Marcus",
+                text: "What is the purpose of the scroll bars? I see them on the right side and bottom of the spreadsheet.",
+                class: "speaker-marcus"
+            },
+            {
+                speaker: "Teacher",
+                text: "The scroll bars allow you to move around the spreadsheet. The vertical scroll bar on the right lets you move up and down. The horizontal scroll bar at the bottom lets you move left and right. This helps you view different areas of a large spreadsheet.",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Sophy",
+                text: "Is there a status bar? I see information at the very bottom of the screen.",
+                class: "speaker-sophy"
+            },
+            {
+                speaker: "Teacher",
+                text: "Excellent! The status bar is at the very bottom and shows useful information like the sum or average of selected cells. It also shows zoom controls and other helpful information about your spreadsheet.",
+                class: "speaker-teacher"
+            },
+            {
+                speaker: "Teacher",
+                text: "So now you all understand the main parts of the Excel user interface. The ribbon has tools, cells store data, the formula bar shows content, and the sheet tabs help organize your work. We will use all of these parts as we continue learning Excel!",
+                class: "speaker-teacher"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        let currentUtterance = null;
+
+        // Initialize the page
+        function initializePage() {
+            document.getElementById('totalLines').textContent = dialogue.length;
+            displayCurrentLine();
+            setupEventListeners();
+        }
+
+        // Display current line
+        function displayCurrentLine() {
+            const item = dialogue[currentIndex];
+            
+            document.getElementById('currentLine').textContent = currentIndex + 1;
+            document.getElementById('speakerDisplay').textContent = item.speaker + ':';
+            document.getElementById('speakerDisplay').className = `speaker-display ${item.class}`;
+            document.getElementById('dialogueText').textContent = item.text;
+
+            // Update progress bar
+            const progress = ((currentIndex + 1) / dialogue.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            // Update button states
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === dialogue.length - 1;
+
+            // Clear status when switching lines
+            updateStatus('');
+            stopSpeech();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('speakBtn').addEventListener('click', speakCurrentLine);
+            document.getElementById('stopBtn').addEventListener('click', stopSpeech);
+            document.getElementById('prevBtn').addEventListener('click', previousLine);
+            document.getElementById('nextBtn').addEventListener('click', nextLine);
+
+            document.getElementById('speedControl').addEventListener('input', (e) => {
+                document.getElementById('speedValue').textContent = e.target.value + 'x';
+            });
+
+            document.getElementById('pitchControl').addEventListener('input', (e) => {
+                document.getElementById('pitchValue').textContent = e.target.value + 'x';
+            });
+        }
+
+        // Navigate to previous line
+        function previousLine() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                displayCurrentLine();
+            }
+        }
+
+        // Navigate to next line
+        function nextLine() {
+            if (currentIndex < dialogue.length - 1) {
+                currentIndex++;
+                displayCurrentLine();
+            }
+        }
+
+        // Speak current line
+        function speakCurrentLine() {
+            const item = dialogue[currentIndex];
+            speakText(item.text, item.speaker);
+        }
+
+        // Speak text function
+        function speakText(text, speaker) {
+            if (isPlaying) {
+                stopSpeech();
+            }
+
+            const speedControl = document.getElementById('speedControl');
+            const pitchControl = document.getElementById('pitchControl');
+            const languageControl = document.getElementById('languageControl');
+
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.rate = parseFloat(speedControl.value);
+            currentUtterance.pitch = parseFloat(pitchControl.value);
+            currentUtterance.lang = languageControl.value;
+
+            currentUtterance.onstart = () => {
+                isPlaying = true;
+                document.getElementById('speakBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                updateStatus(`🔊 Speaking: ${speaker}`);
+            };
+
+            currentUtterance.onend = () => {
+                isPlaying = false;
+                document.getElementById('speakBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                updateStatus('');
+            };
+
+            currentUtterance.onerror = (event) => {
+                console.error('Speech error:', event);
+                updateStatus(`❌ Error: ${event.error}`);
+                document.getElementById('speakBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+            };
+
+            speechSynthesis.speak(currentUtterance);
+        }
+
+        // Stop speech function
+        function stopSpeech() {
+            speechSynthesis.cancel();
+            isPlaying = false;
+            document.getElementById('speakBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            updateStatus('');
+        }
+
+        // Update status
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') previousLine();
+            if (e.key === 'ArrowRight') nextLine();
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (!isPlaying) {
+                    speakCurrentLine();
+                }
+            }
+        });
+
+        // Initialize when page loads
+        window.addEventListener('load', initializePage);
+    </script>
+</body>
+</html>
